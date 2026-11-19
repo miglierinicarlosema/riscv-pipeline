@@ -1,0 +1,41 @@
+name: RISC-V CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-if-stage:
+    name: Test IF Stage
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Icarus Verilog
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y iverilog
+
+      - name: Compile IF Stage
+        run: |
+          mkdir -p build
+          iverilog -g2012 -Wall -s tb_if_stage \
+            -o build/tb_if_stage.vvp \
+            rtl/pc.v \
+            rtl/instr_mem.v \
+            rtl/if_id.v \
+            rtl/if_stage.v \
+            tb/tb_if_stage.v
+
+      - name: Run IF Stage tests
+        run: |
+          vvp build/tb_if_stage.vvp
