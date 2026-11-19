@@ -1,0 +1,29 @@
+# Vivado
+.Xil/
+*.cache/
+*.hw/
+*.sim/
+*.runs/
+*.gen/
+*.ip_user_files/
+
+# Archivos temporales
+*.log
+*.jou
+*.str
+*.bak
+*.tmp
+
+# Simulaciones
+*.vcd
+*.wdb
+*.vvp
+xsim.dir/
+
+# Archivos generados
+*.bit
+*.dcp
+
+# Sistema operativo
+Thumbs.db
+.DS_Store
