@@ -141,11 +141,17 @@ module tb_if_stage;
         step;
         check(ifid_instr, 32'h00A0_0293, "IF/ID con el programa nuevo");
 
+
         // ---------- Resultado ----------
         $display("--------------------------------------------");
         $display("Resultado: %0d verificaciones OK, %0d fallas", pass, fail);
-        if (fail == 0) $display("ETAPA IF: TODO OK");
-        $finish;
+
+        if (fail == 0) begin
+            $display("ETAPA IF: TODO OK");
+            $finish;
+        end else begin
+            $fatal(1, "ETAPA IF: TEST FALLIDO");
+        end
     end
 
 endmodule
