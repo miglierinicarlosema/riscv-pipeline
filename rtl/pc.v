@@ -21,7 +21,7 @@ module pc #(
     output wire [31:0] o_pc_plus4
 );
 
-    assign o_pc_plus4 = o_pc + 32'd8;
+    assign o_pc_plus4 = o_pc + 32'd4;
 
     always @(posedge clk) begin
         if (rst)
