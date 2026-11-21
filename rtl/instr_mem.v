@@ -20,7 +20,7 @@ module instr_mem #(
     parameter DEPTH     = 256,             // cantidad de instrucciones
     parameter INIT_FILE = ""
 )(
-    input  wire                     clk,
+    input  wire                     i_clk,
     // Lectura (desde el PC)
     // Solo se usan los bits [AW+1:2]: [1:0] valen siempre 0 (instrucciones
     // alineadas a 4 bytes) y los altos sobran porque la memoria es chica.
@@ -47,7 +47,7 @@ module instr_mem #(
             $readmemh(INIT_FILE, mem);
     end
 
-    always @(posedge clk) begin
+    always @(posedge i_clk) begin
         if (i_we)
             mem[i_wr_addr] <= i_wr_data;
     end

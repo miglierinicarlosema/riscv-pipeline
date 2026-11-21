@@ -12,36 +12,39 @@
 // PC e IF/ID avanzan solo si (i_en && !i_stall). Nunca se toca el clock.
 // =============================================================================
 module if_stage #(
+    parameter NB_DATA   = 32,      // ancho del PC
     parameter DEPTH     = 256,
     parameter INIT_FILE = ""
 )(
-    input  wire                     clk,
-    input  wire                     rst,
+    input  wire                     i_clk,
+    input  wire                     i_rst,
     // Control
     input  wire                     i_en,
     input  wire                     i_stall,
     input  wire                     i_flush,
     input  wire                     i_pc_src,
-    input  wire [31:0]              i_pc_target,
+    input  wire [NB_DATA-1:0]       i_pc_target,
     // Puerto de escritura de la memoria de programa (Debug Unit)
     input  wire                     i_imem_we,
     input  wire [$clog2(DEPTH)-1:0] i_imem_waddr,
     input  wire [31:0]              i_imem_wdata,
     // Salidas hacia ID (contenido del latch IF/ID)
-    output wire [31:0]              o_ifid_pc,
-    output wire [31:0]              o_ifid_pc_plus4,
+    output wire [NB_DATA-1:0]       o_ifid_pc,
+    output wire [NB_DATA-1:0]       o_ifid_pc_plus4,
     output wire [31:0]              o_ifid_instr,
     // Para la Debug Unit
-    output wire [31:0]              o_pc
+    output wire [NB_DATA-1:0]       o_pc
 );
 
     wire        advance = i_en & ~i_stall;
-    wire [31:0] pc_plus4;
+    wire [NB_DATA-1:0] pc_plus4;
     wire [31:0] instr;
 
-    pc u_pc (
-        .clk         (clk),
-        .rst         (rst),
+    pc #(
+        .NB_DATA     (NB_DATA)
+    ) u_pc (
+        .i_clk         (i_clk),
+        .i_rst         (i_rst),
         .i_en        (advance),
         .i_pc_src    (i_pc_src),
         .i_pc_target (i_pc_target),
@@ -53,7 +56,7 @@ module if_stage #(
         .DEPTH     (DEPTH),
         .INIT_FILE (INIT_FILE)
     ) u_imem (
-        .clk       (clk),
+        .i_clk       (i_clk),
         .i_rd_addr (o_pc),
         .o_rd_data (instr),
         .i_we      (i_imem_we),
@@ -61,9 +64,11 @@ module if_stage #(
         .i_wr_data (i_imem_wdata)
     );
 
-    if_id u_if_id (
-        .clk        (clk),
-        .rst        (rst),
+    if_id #(
+        .NB_DATA    (NB_DATA)
+    ) u_if_id (
+        .i_clk        (i_clk),
+        .i_rst        (i_rst),
         .i_en       (advance),
         .i_flush    (i_flush),
         .i_pc       (o_pc),

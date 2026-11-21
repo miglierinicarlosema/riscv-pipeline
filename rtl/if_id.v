@@ -10,30 +10,32 @@
 //                  salto tomado). RISC-V NO tiene delay slot.
 //   El flush solo actúa si i_en = 1: con el procesador detenido nada cambia.
 // =============================================================================
-module if_id (
-    input  wire        clk,
-    input  wire        rst,
+module if_id #(
+    parameter NB_DATA = 32    // ancho del PC (la instrucción es siempre de 32 bits)
+)(
+    input  wire        i_clk,
+    input  wire        i_rst,
     input  wire        i_en,
     input  wire        i_flush,
-    input  wire [31:0] i_pc,
-    input  wire [31:0] i_pc_plus4,
+    input  wire [NB_DATA-1:0] i_pc,
+    input  wire [NB_DATA-1:0] i_pc_plus4,
     input  wire [31:0] i_instr,
-    output reg  [31:0] o_pc,
-    output reg  [31:0] o_pc_plus4,
+    output reg  [NB_DATA-1:0] o_pc,
+    output reg  [NB_DATA-1:0] o_pc_plus4,
     output reg  [31:0] o_instr
 );
 
     localparam NOP = 32'h0000_0013;   // addi x0, x0, 0
 
-    always @(posedge clk) begin
-        if (rst) begin
-            o_pc       <= 32'd0;
-            o_pc_plus4 <= 32'd0;
+    always @(posedge i_clk) begin
+        if (i_rst) begin
+            o_pc       <= {NB_DATA{1'b0}};
+            o_pc_plus4 <= {NB_DATA{1'b0}};
             o_instr    <= NOP;
         end else if (i_en) begin
             if (i_flush) begin
-                o_pc       <= 32'd0;
-                o_pc_plus4 <= 32'd0;
+                o_pc       <= {NB_DATA{1'b0}};
+                o_pc_plus4 <= {NB_DATA{1'b0}};
                 o_instr    <= NOP;
             end else begin
                 o_pc       <= i_pc;
