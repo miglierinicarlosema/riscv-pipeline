@@ -14,10 +14,15 @@ jobs:
       - name: Instalar Verilator
         run: sudo apt-get update && sudo apt-get install -y verilator
       - name: Lint de cada modulo
-        # Revisa latches inferidos, anchos que no coinciden, etc.
-        # El top que se revisa es if_stage; cuando exista el procesador completo,
-        # cambiar --top-module por el top del pipeline.
-        run: verilator --lint-only -Wall -Wno-DECLFILENAME --top-module if_stage rtl/*.v
+        # Revisa cada archivo de rtl/ por separado (latches inferidos, anchos
+        # que no coinciden, senales sin usar). Convencion: cada archivo tiene
+        # un modulo con su mismo nombre. Si uno falla, el paso se corta y da rojo.
+        run: |
+          for f in rtl/*.v; do
+            m=$(basename "$f" .v)
+            echo "Lint de $m"
+            verilator --lint-only -Wall -Wno-DECLFILENAME --top-module "$m" rtl/*.v
+          done
 
   simulacion:
     name: Testbenches (Icarus Verilog)
