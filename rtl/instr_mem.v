@@ -22,7 +22,11 @@ module instr_mem #(
 )(
     input  wire                     clk,
     // Lectura (desde el PC)
+    // Solo se usan los bits [AW+1:2]: [1:0] valen siempre 0 (instrucciones
+    // alineadas a 4 bytes) y los altos sobran porque la memoria es chica.
+    /* verilator lint_off UNUSEDSIGNAL */
     input  wire [31:0]              i_rd_addr,   // dirección en bytes
+    /* verilator lint_on UNUSEDSIGNAL */
     output wire [31:0]              o_rd_data,
     // Escritura (desde la Debug Unit)
     input  wire                     i_we,

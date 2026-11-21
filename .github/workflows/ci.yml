@@ -1,41 +1,36 @@
+# Corre el lint y todos los testbenches en cada push y pull request.
 name: RISC-V CI
 
 on:
   push:
-    branches: [main, develop]
   pull_request:
-    branches: [main, develop]
-  workflow_dispatch:
-
-permissions:
-  contents: read
 
 jobs:
-  test-if-stage:
-    name: Test IF Stage
+  lint:
+    name: Lint (Verilator)
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+      - name: Instalar Verilator
+        run: sudo apt-get update && sudo apt-get install -y verilator
+      - name: Lint de cada modulo
+        # Revisa latches inferidos, anchos que no coinciden, etc.
+        # El top que se revisa es if_stage; cuando exista el procesador completo,
+        # cambiar --top-module por el top del pipeline.
+        run: verilator --lint-only -Wall -Wno-DECLFILENAME --top-module if_stage rtl/*.v
 
-      - name: Install Icarus Verilog
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y iverilog
-
-      - name: Compile IF Stage
-        run: |
-          mkdir -p build
-          iverilog -g2012 -Wall -s tb_if_stage \
-            -o build/tb_if_stage.vvp \
-            rtl/pc.v \
-            rtl/instr_mem.v \
-            rtl/if_id.v \
-            rtl/if_stage.v \
-            tb/tb_if_stage.v
-
-      - name: Run IF Stage tests
-        run: |
-          vvp build/tb_if_stage.vvp
+  simulacion:
+    name: Testbenches (Icarus Verilog)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Instalar Icarus Verilog
+        run: sudo apt-get update && sudo apt-get install -y iverilog
+      - name: Correr testbenches
+        run: bash run_tests.sh
+      - name: Guardar formas de onda
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: formas-de-onda
+          path: build/*.vcd

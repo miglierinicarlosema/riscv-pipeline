@@ -1,29 +1,51 @@
-# Vivado
-.Xil/
+# =============================================================================
+# .gitignore para el TP final (Vivado + simulación + Python)
+# Se sube: los .v, los testbenches, el .xdc, los .xci de IP y los .py.
+# Se ignora: todo lo que Vivado o los simuladores generan solos.
+# =============================================================================
+
+# --- Carpetas que Vivado regenera ---
 *.cache/
-*.hw/
-*.sim/
 *.runs/
+*.sim/
+*.hw/
 *.gen/
 *.ip_user_files/
+.Xil/
 
-# Archivos temporales
-*.log
+# --- Archivos temporales y logs de Vivado ---
 *.jou
+*.log
 *.str
-*.bak
-*.tmp
-
-# Simulaciones
-*.vcd
 *.wdb
-*.vvp
-xsim.dir/
-
-# Archivos generados
-*.bit
+*.pb
+*.backup.*
+vivado*.zip
+webtalk*
+usage_statistics_webtalk.*
 *.dcp
+*.bit
+*.ltx
 
-# Sistema operativo
-Thumbs.db
+# --- Simulación fuera de Vivado (Icarus / Verilator / run_tests.sh) ---
+build/
+*.vcd
+*.vvp
+obj_dir/
+
+# --- Python ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# --- Sistema operativo y editores ---
 .DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# --- Proyecto de Vivado generado por create_project.tcl (no se versiona) ---
+vivado/
+*.xpr
