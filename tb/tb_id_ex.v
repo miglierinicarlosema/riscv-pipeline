@@ -15,6 +15,8 @@
 // =============================================================================
 module tb_id_ex;
 
+    localparam PERIOD = 10;   // periodo del clock en ns (100 MHz)
+
     localparam NOP = 32'h0000_0013;
 
     reg clk = 0, rst = 1, en = 0, flush = 0;
@@ -36,7 +38,7 @@ module tb_id_ex;
     wire [2:0]  q_funct3;
 
     id_ex dut (
-        .clk(clk), .rst(rst), .i_en(en), .i_flush(flush),
+        .i_clk(clk), .i_rst(rst), .i_en(en), .i_flush(flush),
         .i_reg_write(reg_write), .i_wb_sel(wb_sel), .i_mem_read(mem_read),
         .i_mem_write(mem_write), .i_alu_src_a(alu_src_a), .i_alu_src_b(alu_src_b),
         .i_alu_op(alu_op), .i_branch(branch), .i_jump(jump), .i_jalr(jalr),
@@ -53,7 +55,7 @@ module tb_id_ex;
         .o_funct3(q_funct3), .o_funct7_b5(q_funct7_b5), .o_instr(q_instr)
     );
 
-    always #5 clk = ~clk;
+    always #(PERIOD/2) clk = ~clk;
 
     // Buses con todas las señales, en el mismo orden
     wire [225:0] in_bus  = {reg_write, wb_sel, mem_read, mem_write, alu_src_a, alu_src_b,

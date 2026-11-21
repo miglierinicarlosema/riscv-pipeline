@@ -14,6 +14,8 @@
 // =============================================================================
 module tb_id_stage;
 
+    localparam PERIOD = 10;   // periodo del clock en ns (100 MHz)
+
     localparam NOP  = 32'h0000_0013;
     localparam HALT = 32'hFFFF_FFFF;
 
@@ -41,7 +43,7 @@ module tb_id_stage;
     wire [2:0]  funct3;
 
     if_stage #(.DEPTH(256)) u_if (
-        .clk(clk), .rst(rst),
+        .i_clk(clk), .i_rst(rst),
         .i_en(en), .i_stall(1'b0), .i_flush(1'b0),
         .i_pc_src(1'b0), .i_pc_target(32'd0),
         .i_imem_we(imem_we), .i_imem_waddr(imem_waddr), .i_imem_wdata(imem_wdata),
@@ -50,7 +52,7 @@ module tb_id_stage;
     );
 
     id_stage u_id (
-        .clk(clk), .rst(rst), .i_en(en), .i_flush(flush),
+        .i_clk(clk), .i_rst(rst), .i_en(en), .i_flush(flush),
         .i_pc(ifid_pc), .i_pc_plus4(ifid_pc4), .i_instr(ifid_instr),
         .i_wb_we(wb_we), .i_wb_rd(wb_rd), .i_wb_data(wb_data),
         .i_dbg_addr(dbg_addr), .o_dbg_data(dbg_data),
@@ -65,7 +67,7 @@ module tb_id_stage;
         .o_funct3(funct3), .o_funct7_b5(funct7_b5), .o_instr(ex_instr)
     );
 
-    always #5 clk = ~clk;
+    always #(PERIOD/2) clk = ~clk;
 
     // Programa de prueba (verificable con RARS)
     reg [31:0] prog [0:6];

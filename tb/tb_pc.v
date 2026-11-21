@@ -2,6 +2,8 @@
 
 module tb_pc;
 
+    localparam PERIOD = 10;   // periodo del clock en ns (100 MHz)
+
     reg clk = 0;
     reg rst = 1;
     reg en = 0;
@@ -15,8 +17,8 @@ module tb_pc;
     integer fail = 0;
 
     pc dut (
-        .clk(clk),
-        .rst(rst),
+        .i_clk(clk),
+        .i_rst(rst),
         .i_en(en),
         .i_pc_src(pc_src),
         .i_pc_target(pc_target),
@@ -24,7 +26,7 @@ module tb_pc;
         .o_pc_plus4(pc_plus4)
     );
 
-    always #5 clk = ~clk;
+    always #(PERIOD/2) clk = ~clk;
 
     task check(
         input [31:0] got,

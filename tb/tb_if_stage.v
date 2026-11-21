@@ -16,6 +16,8 @@
 
 module tb_if_stage;
 
+    localparam PERIOD = 10;   // periodo del clock en ns (100 MHz)
+
     localparam DEPTH = 256;
     localparam NOP   = 32'h0000_0013;
     localparam HALT  = 32'hFFFF_FFFF;
@@ -32,7 +34,7 @@ module tb_if_stage;
     wire [31:0] ifid_pc, ifid_pc4, ifid_instr, pc;
 
     if_stage #(.DEPTH(DEPTH)) dut (
-        .clk(clk), .rst(rst),
+        .i_clk(clk), .i_rst(rst),
         .i_en(en), .i_stall(stall), .i_flush(flush),
         .i_pc_src(pc_src), .i_pc_target(pc_target),
         .i_imem_we(imem_we), .i_imem_waddr(imem_waddr), .i_imem_wdata(imem_wdata),
@@ -40,7 +42,7 @@ module tb_if_stage;
         .o_pc(pc)
     );
 
-    always #5 clk = ~clk;   // 100 MHz en simulación
+    always #(PERIOD/2) clk = ~clk;
 
     // Programa de prueba (codificaciones RISC-V verificables con RARS)
     reg [31:0] prog [0:4];
@@ -141,16 +143,15 @@ module tb_if_stage;
         step;
         check(ifid_instr, 32'h00A0_0293, "IF/ID con el programa nuevo");
 
-
         // ---------- Resultado ----------
         $display("--------------------------------------------");
         $display("Resultado: %0d verificaciones OK, %0d fallas", pass, fail);
-
         if (fail == 0) begin
             $display("ETAPA IF: TODO OK");
             $finish;
         end else begin
-            $fatal(1, "ETAPA IF: TEST FALLIDO");
+            // $fatal termina con código de error: así GitHub Actions marca el test como fallido
+            $fatal(1, "ETAPA IF: %0d FALLAS", fail);
         end
     end
 

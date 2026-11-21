@@ -29,26 +29,29 @@
 //     (RISC-V los ubica igual en todos los formatos): rs1 = [19:15],
 //     rs2 = [24:20], rd = [11:7], funct3 = [14:12], bit 30 = funct7[5].
 // =============================================================================
-module id_stage (
-    input  wire        clk,
-    input  wire        rst,
+module id_stage #(
+    parameter NB_DATA = 32,   // ancho de datos y direcciones
+    parameter NB_REG  = 5     // bits para numerar los registros
+)(
+    input  wire        i_clk,
+    input  wire        i_rst,
     input  wire        i_en,
     input  wire        i_flush,
     // Desde IF/ID
-    input  wire [31:0] i_pc,
-    input  wire [31:0] i_pc_plus4,
+    input  wire [NB_DATA-1:0] i_pc,
+    input  wire [NB_DATA-1:0] i_pc_plus4,
     input  wire [31:0] i_instr,
     // Escritura del banco de registros (desde WB)
     input  wire        i_wb_we,
-    input  wire [4:0]  i_wb_rd,
-    input  wire [31:0] i_wb_data,
+    input  wire [NB_REG-1:0]  i_wb_rd,
+    input  wire [NB_DATA-1:0] i_wb_data,
     // Lectura de debug del banco de registros
-    input  wire [4:0]  i_dbg_addr,
-    output wire [31:0] o_dbg_data,
+    input  wire [NB_REG-1:0]  i_dbg_addr,
+    output wire [NB_DATA-1:0] o_dbg_data,
     // Información de la instrucción en ID (para HALT y la unidad de riesgos)
     output wire        o_id_halt,
-    output wire [4:0]  o_id_rs1_addr,
-    output wire [4:0]  o_id_rs2_addr,
+    output wire [NB_REG-1:0]  o_id_rs1_addr,
+    output wire [NB_REG-1:0]  o_id_rs2_addr,
     output wire        o_id_uses_rs1,
     output wire        o_id_uses_rs2,
     // Contenido del latch ID/EX
@@ -65,14 +68,14 @@ module id_stage (
     output wire        o_uses_rs1,
     output wire        o_uses_rs2,
     output wire        o_halt,
-    output wire [31:0] o_pc,
-    output wire [31:0] o_pc_plus4,
-    output wire [31:0] o_rs1_data,
-    output wire [31:0] o_rs2_data,
-    output wire [31:0] o_imm,
-    output wire [4:0]  o_rs1_addr,
-    output wire [4:0]  o_rs2_addr,
-    output wire [4:0]  o_rd_addr,
+    output wire [NB_DATA-1:0] o_pc,
+    output wire [NB_DATA-1:0] o_pc_plus4,
+    output wire [NB_DATA-1:0] o_rs1_data,
+    output wire [NB_DATA-1:0] o_rs2_data,
+    output wire [NB_DATA-1:0] o_imm,
+    output wire [NB_REG-1:0]  o_rs1_addr,
+    output wire [NB_REG-1:0]  o_rs2_addr,
+    output wire [NB_REG-1:0]  o_rd_addr,
     output wire [2:0]  o_funct3,
     output wire        o_funct7_b5,
     output wire [31:0] o_instr
@@ -119,11 +122,14 @@ module id_stage (
     );
 
     // ---------- Banco de registros ----------
-    wire [31:0] rs1_data, rs2_data;
+    wire [NB_DATA-1:0] rs1_data, rs2_data;
 
-    regfile u_regfile (
-        .clk        (clk),
-        .rst        (rst),
+    regfile #(
+        .NB_DATA    (NB_DATA),
+        .NB_REG     (NB_REG)
+    ) u_regfile (
+        .i_clk        (i_clk),
+        .i_rst        (i_rst),
         .i_we       (i_wb_we),
         .i_rd_addr  (i_wb_rd),
         .i_rd_data  (i_wb_data),
@@ -143,9 +149,12 @@ module id_stage (
     assign o_id_uses_rs2 = c_uses_rs2;
 
     // ---------- Latch ID/EX ----------
-    id_ex u_id_ex (
-        .clk         (clk),
-        .rst         (rst),
+    id_ex #(
+        .NB_DATA     (NB_DATA),
+        .NB_REG      (NB_REG)
+    ) u_id_ex (
+        .i_clk         (i_clk),
+        .i_rst         (i_rst),
         .i_en        (i_en),
         .i_flush     (i_flush),
         .i_reg_write (c_reg_write),

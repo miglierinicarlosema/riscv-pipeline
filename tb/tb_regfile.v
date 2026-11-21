@@ -14,6 +14,8 @@
 // =============================================================================
 module tb_regfile;
 
+    localparam PERIOD = 10;   // periodo del clock en ns (100 MHz)
+
     reg         clk = 0;
     reg         rst = 1;
     reg         we = 0;
@@ -22,14 +24,14 @@ module tb_regfile;
     wire [31:0] rs1_data, rs2_data, dbg_data;
 
     regfile dut (
-        .clk(clk), .rst(rst),
+        .i_clk(clk), .i_rst(rst),
         .i_we(we), .i_rd_addr(rd_addr), .i_rd_data(rd_data),
         .i_rs1_addr(rs1_addr), .i_rs2_addr(rs2_addr),
         .o_rs1_data(rs1_data), .o_rs2_data(rs2_data),
         .i_dbg_addr(dbg_addr), .o_dbg_data(dbg_data)
     );
 
-    always #5 clk = ~clk;
+    always #(PERIOD/2) clk = ~clk;
 
     integer pass = 0, fail = 0;
 

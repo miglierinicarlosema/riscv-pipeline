@@ -20,33 +20,40 @@
 // - El puerto de debug no tiene bypass: la Debug Unit lee con el procesador
 //   detenido, cuando no hay escrituras en curso.
 // =============================================================================
-module regfile (
-    input  wire        clk,
-    input  wire        rst,
+module regfile #(
+    parameter NB_DATA = 32,   // ancho de cada registro
+    parameter NB_REG  = 5     // bits para numerar los registros (2^5 = 32)
+)(
+    input  wire        i_clk,
+    input  wire        i_rst,
     // Escritura (desde WB)
     input  wire        i_we,
-    input  wire [4:0]  i_rd_addr,
-    input  wire [31:0] i_rd_data,
+    input  wire [NB_REG-1:0]  i_rd_addr,
+    input  wire [NB_DATA-1:0] i_rd_data,
     // Lecturas (desde ID)
-    input  wire [4:0]  i_rs1_addr,
-    input  wire [4:0]  i_rs2_addr,
-    output wire [31:0] o_rs1_data,
-    output wire [31:0] o_rs2_data,
+    input  wire [NB_REG-1:0]  i_rs1_addr,
+    input  wire [NB_REG-1:0]  i_rs2_addr,
+    output wire [NB_DATA-1:0] o_rs1_data,
+    output wire [NB_DATA-1:0] o_rs2_data,
     // Lectura para la Debug Unit
-    input  wire [4:0]  i_dbg_addr,
-    output wire [31:0] o_dbg_data
+    input  wire [NB_REG-1:0]  i_dbg_addr,
+    output wire [NB_DATA-1:0] o_dbg_data
 );
 
-    reg [31:0] regs [0:31];
+    localparam N_REGS = 1 << NB_REG;            // 32 registros
+    localparam [NB_REG-1:0]  X0   = {NB_REG{1'b0}};
+    localparam [NB_DATA-1:0] ZERO = {NB_DATA{1'b0}};
+
+    reg [NB_DATA-1:0] regs [0:N_REGS-1];
 
     // Hay escritura válida si está habilitada y no es a x0
-    wire write_ok = i_we && (i_rd_addr != 5'd0);
+    wire write_ok = i_we && (i_rd_addr != X0);
 
     integer k;
-    always @(posedge clk) begin
-        if (rst) begin
-            for (k = 0; k < 32; k = k + 1)
-                regs[k] <= 32'd0;
+    always @(posedge i_clk) begin
+        if (i_rst) begin
+            for (k = 0; k < N_REGS; k = k + 1)
+                regs[k] <= ZERO;
         end else if (write_ok) begin
             regs[i_rd_addr] <= i_rd_data;
         end
@@ -54,14 +61,14 @@ module regfile (
 
     // Lectura con bypass: x0 siempre 0; si se está escribiendo el mismo
     // registro en este ciclo, sale el dato nuevo.
-    assign o_rs1_data = (i_rs1_addr == 5'd0)                    ? 32'd0     :
+    assign o_rs1_data = (i_rs1_addr == X0)                      ? ZERO      :
                         (write_ok && i_rd_addr == i_rs1_addr)   ? i_rd_data :
                                                                   regs[i_rs1_addr];
 
-    assign o_rs2_data = (i_rs2_addr == 5'd0)                    ? 32'd0     :
+    assign o_rs2_data = (i_rs2_addr == X0)                      ? ZERO      :
                         (write_ok && i_rd_addr == i_rs2_addr)   ? i_rd_data :
                                                                   regs[i_rs2_addr];
 
-    assign o_dbg_data = (i_dbg_addr == 5'd0) ? 32'd0 : regs[i_dbg_addr];
+    assign o_dbg_data = (i_dbg_addr == X0) ? ZERO : regs[i_dbg_addr];
 
 endmodule
